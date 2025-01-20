@@ -1,0 +1,25 @@
+server:
+  port: 8080
+
+
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          clover:
+            client-id: ${spring.security.oauth2.client.registration.clover.client-id}
+            client-secret: ${spring.security.oauth2.client.registration.clover.client-secret}
+            authorization-grant-type: authorization_code
+            redirect-uri: "http://localhost:8080/api/v1/clover/callback"
+            scope: INVENTORY_READ,PAYMENTS_READ,PAYMENTS_WRITE
+        provider:
+          clover:
+            authorization-uri: https://apisandbox.dev.clover.com/oauth/v2/authorize
+            token-uri: https://apisandbox.dev.clover.com/oauth/v2/token
+            user-info-uri: https://apisandbox.dev.clover.com/v3/merchants/current
+            user-name-attribute: id
+
+logging:
+  level:
+    root: DEBUG
