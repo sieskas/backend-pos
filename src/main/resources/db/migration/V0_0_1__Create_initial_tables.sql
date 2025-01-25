@@ -53,8 +53,8 @@ INSERT INTO persons (id, first_name, last_name, contact_id) VALUES
 -- Insertion des utilisateurs
 INSERT INTO users (id, username, password, person_id) VALUES
                                                           (1, 'admin', '$2a$10$UH7MfCwu/KsUh3xVzOtfzu0yWqDVZdoYm6u9cLd21bFyg9oHEyuom', 1),
-                                                          (2, 'user1', '$2a$10$hUreO.z3cjHjXEyabdO6eOMI5cEyWJexe1lH0gaKVOmMiHhpDXePC', 2),
-                                                          (3, 'user2', '$2a$10$8fVj4.4PyZwXeafzkLg8puEr0zVtZ2LSbV.TUJdIy3UqaqM0bbKrm', 3);
+                                                          (2, 'user1', '$2a$10$hUreO.z3cjHjXEyabdO6eOJl8DaRTGTpxYn5lJw2x99GPw6JNw/3G', 2),
+                                                          (3, 'user2', '$2a$10$8fVj4.4PyZwXeafzkLg8puMsIrMz9csCE0g.02SMsVRbFV4/55xWu', 3);
 
 -- Attribution des rôles
 INSERT INTO user_roles (user_id, role_id) VALUES
