@@ -1,7 +1,7 @@
 package com.rotules.backend.api.v1.controller;
 
 import com.rotules.backend.api.v1.controller.resources.LoginRequest;
-import com.rotules.backend.api.v1.controller.security.JwtTokenProvider;
+import com.rotules.backend.security.JwtTokenProvider;
 import com.rotules.backend.domain.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

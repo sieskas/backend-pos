@@ -52,7 +52,7 @@ INSERT INTO persons (id, first_name, last_name, contact_id) VALUES
 
 -- Insertion des utilisateurs
 INSERT INTO users (id, username, password, person_id) VALUES
-                                                          (1, 'admin', '$2a$10$UH7MfCwu/KsUh3xVzOtfzuf.ZdVbJlCcKVzRFe9YwxxZL6HNpfL1m', 1),
+                                                          (1, 'admin', '$2a$10$UH7MfCwu/KsUh3xVzOtfzu0yWqDVZdoYm6u9cLd21bFyg9oHEyuom', 1),
                                                           (2, 'user1', '$2a$10$hUreO.z3cjHjXEyabdO6eOMI5cEyWJexe1lH0gaKVOmMiHhpDXePC', 2),
                                                           (3, 'user2', '$2a$10$8fVj4.4PyZwXeafzkLg8puEr0zVtZ2LSbV.TUJdIy3UqaqM0bbKrm', 3);
 

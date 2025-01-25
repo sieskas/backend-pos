@@ -1,4 +1,4 @@
-package com.rotules.backend.api.v1.controller.security;
+package com.rotules.backend.security;
 
 import com.rotules.backend.domain.User;
 import io.jsonwebtoken.*;
