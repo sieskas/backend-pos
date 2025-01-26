@@ -42,9 +42,13 @@ public class User implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return roles.stream()
-                .map(role -> new SimpleGrantedAuthority(role.getName().getValue()))
+                .map(role -> new SimpleGrantedAuthority(role.getName().name()))
                 .collect(Collectors.toSet());
     }
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "root_location_id")
+    private Location rootLocation;  // Une seule location racine
 
     @Override
     public String getPassword() {
@@ -107,5 +111,29 @@ public class User implements UserDetails {
 
     public void setRoles(Set<Role> roles) {
         this.roles = roles;
+    }
+
+    public void setAccountNonExpired(boolean accountNonExpired) {
+        this.accountNonExpired = accountNonExpired;
+    }
+
+    public void setAccountNonLocked(boolean accountNonLocked) {
+        this.accountNonLocked = accountNonLocked;
+    }
+
+    public void setCredentialsNonExpired(boolean credentialsNonExpired) {
+        this.credentialsNonExpired = credentialsNonExpired;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public Location getRootLocation() {
+        return rootLocation;
+    }
+
+    public void setRootLocation(Location rootLocation) {
+        this.rootLocation = rootLocation;
     }
 }

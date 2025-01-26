@@ -1,12 +1,11 @@
 -- V0_0_3__Create_location_tables.sql
 
--- Types de locations
 CREATE TABLE location_types (
                                 id BIGINT PRIMARY KEY AUTO_INCREMENT,
                                 name VARCHAR(50) UNIQUE NOT NULL
 );
 
--- Table principale des locations
+-- Table principale des locations (inchangé)
 CREATE TABLE locations (
                            id BIGINT PRIMARY KEY AUTO_INCREMENT,
                            label VARCHAR(255) NOT NULL,
@@ -16,16 +15,10 @@ CREATE TABLE locations (
                            FOREIGN KEY (parent_id) REFERENCES locations(id)
 );
 
--- Table de relation entre users et locations
-CREATE TABLE user_locations (
-                                user_id BIGINT,
-                                location_id BIGINT,
-                                PRIMARY KEY (user_id, location_id),
-                                FOREIGN KEY (user_id) REFERENCES users(id),
-                                FOREIGN KEY (location_id) REFERENCES locations(id)
-);
+ALTER TABLE users ADD COLUMN root_location_id BIGINT,
+    ADD FOREIGN KEY (root_location_id) REFERENCES locations(id);
 
--- Insertion des types de base
+-- Insertion des types de base (inchangé)
 INSERT INTO location_types (id, name) VALUES
                                           (1, 'CHAIN'),
                                           (2, 'REGION'),

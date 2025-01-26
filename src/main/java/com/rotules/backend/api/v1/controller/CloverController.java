@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.env.Environment;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +13,7 @@ import org.springframework.web.client.RestTemplate;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,23 +39,17 @@ public class CloverController {
         response.sendRedirect(authorizeUrl);
     }
 
-    /**
-     * 2) Callback appelé par Clover (redirection).
-     * On échange le "code" contre un "access_token".
-     * On envoie ensuite du HTML qui va faire un postMessage(...) vers le parent.
-     */
     @GetMapping("/callback")
     public void callback(
             @RequestParam("code") String code,
             @RequestParam(value = "merchant_id", required = false) String merchantId,
-            HttpServletResponse response, HttpSession session
+            HttpServletResponse response,
+            HttpSession session
     ) throws IOException {
-
         String clientId = environment.getProperty("spring.security.oauth2.client.registration.clover.client-id");
         String clientSecret = environment.getProperty("spring.security.oauth2.client.registration.clover.client-secret");
         String redirectUri = environment.getProperty("spring.security.oauth2.client.registration.clover.redirect-uri");
 
-        // Préparation de la requête pour échanger le "code" contre un "access_token"
         RestTemplate restTemplate = new RestTemplate();
         Map<String, String> requestBody = new HashMap<>();
         requestBody.put("client_id", clientId);
@@ -63,11 +59,13 @@ public class CloverController {
         requestBody.put("redirect_uri", redirectUri);
 
         try {
-            // On envoie la requête POST vers https://apisandbox.dev.clover.com/oauth/v2/token
-            ResponseEntity<Map> tokenResponse =
-                    restTemplate.postForEntity("https://apisandbox.dev.clover.com/oauth/v2/token",
-                            requestBody,
-                            Map.class);
+            ResponseEntity<Map<String, Object>> tokenResponse = restTemplate.exchange(
+                    "https://apisandbox.dev.clover.com/oauth/v2/token",
+                    HttpMethod.POST,
+                    new HttpEntity<>(requestBody),
+                    new ParameterizedTypeReference<>() {
+                    }
+            );
 
             if (!tokenResponse.getStatusCode().is2xxSuccessful()) {
                 throw new RuntimeException("Failed to get token: " + tokenResponse.getStatusCode());
@@ -81,8 +79,8 @@ public class CloverController {
             String tokenJson = new ObjectMapper().writeValueAsString(tokenData);
 
             String safeJson = tokenJson
-                    .replace("\\", "\\\\")   // échapper backslash
-                    .replace("\"", "\\\"");  // échapper guillemets
+                    .replace("\\", "\\\\")
+                    .replace("\"", "\\\"");
 
             String htmlResponse = ""
                     + "<html>\n"
@@ -100,9 +98,7 @@ public class CloverController {
                     + "         try {\n"
                     + "           const tokenData = JSON.parse(\"" + safeJson + "\");\n"
                     + "\n"
-                    + "           // Vérifier si on a un opener (fenêtre parente)\n"
                     + "           if (window.opener && !window.opener.closed) {\n"
-                    + "             // Envoyer le token au parent\n"
                     + "             window.opener.postMessage({ status: 'success', data: tokenData }, 'http://localhost:5173');\n"
                     + "           } else {\n"
                     + "             console.warn('Pas de window.opener, impossible d\\'envoyer le message.');\n"
@@ -115,8 +111,7 @@ public class CloverController {
                     + "  </body>\n"
                     + "</html>";
 
-
-              response.setContentType("text/html");
+            response.setContentType("text/html");
             response.getWriter().write(htmlResponse);
             response.getWriter().flush();
 
@@ -128,16 +123,22 @@ public class CloverController {
     }
 
     @GetMapping("/orders")
-    public ResponseEntity<?> getCloverOrders(@RequestParam String merchantId, HttpSession session) {
+    public ResponseEntity<Object> getCloverOrders(@RequestParam String merchantId, HttpSession session) {
         RestTemplate restTemplate = new RestTemplate();
         Object tokenData = session.getAttribute("cloverToken");
+
         if (tokenData == null || !(tokenData instanceof Map)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "No token found in session"));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Collections.singletonMap("error", "No token found in session"));
         }
 
-        String accessToken = (String) ((Map<?, ?>) tokenData).get("access_token");
+        @SuppressWarnings("unchecked")
+        Map<String, Object> tokenMap = (Map<String, Object>) tokenData;
+        String accessToken = (String) tokenMap.get("access_token");
+
         if (accessToken == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid token in session"));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Collections.singletonMap("error", "Invalid token in session"));
         }
 
         LocalDateTime startOfJanuary = LocalDateTime.of(2025, 1, 1, 0, 0);
@@ -146,23 +147,26 @@ public class CloverController {
         long startTime = startOfJanuary.toInstant(ZoneOffset.UTC).toEpochMilli();
         long endTime = endOfJanuary.toInstant(ZoneOffset.UTC).toEpochMilli();
 
-        // Construire l'URL de l'API Clover avec les paramètres de temps
         String apiUrl = String.format("%s/v3/merchants/%s/orders",
                 "https://sandbox.dev.clover.com/", merchantId);
-//https://sandbox.dev.clover.com
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + accessToken);
-        headers.setAccept(java.util.Collections.singletonList(MediaType.APPLICATION_JSON));
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
         try {
-            // Appeler l'API Clover
-            ResponseEntity<Map> response = restTemplate.exchange(apiUrl, HttpMethod.GET, entity, Map.class);
+            ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
+                    apiUrl,
+                    HttpMethod.GET,
+                    entity,
+                    new ParameterizedTypeReference<Map<String, Object>>() {}
+            );
             return ResponseEntity.ok(response.getBody());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "Failed to fetch Clover orders"));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.singletonMap("error", "Failed to fetch Clover orders"));
         }
     }
 }

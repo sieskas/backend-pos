@@ -20,7 +20,7 @@ public class Role {
     }
 
     public String getAuthority() {
-        return name.getValue();
+        return name.name();
     }
 
     // Getters et setters
@@ -37,6 +37,7 @@ public class Role {
     }
 
     public void setName(RoleEnum name) {
+        this.id = name.getId();
         this.name = name;
     }
 }
