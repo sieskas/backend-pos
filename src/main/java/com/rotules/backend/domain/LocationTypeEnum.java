@@ -24,4 +24,13 @@ public enum LocationTypeEnum {
         }
         throw new IllegalArgumentException("No location type found with id: " + id);
     }
+
+    public static LocationTypeEnum getByName(String name) {
+        for (LocationTypeEnum type : values()) {
+            if (type.name().equals(name)) {
+                return type;
+            }
+        }
+        throw new IllegalArgumentException("No location type found with id: " + name);
+    }
 }

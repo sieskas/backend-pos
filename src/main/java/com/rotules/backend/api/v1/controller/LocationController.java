@@ -1,18 +1,18 @@
 package com.rotules.backend.api.v1.controller;
 
+import com.rotules.backend.api.v1.controller.resources.LocationStructureDTO;
 import com.rotules.backend.api.v1.controller.resources.LocationTreeDTO;
 import com.rotules.backend.domain.Location;
+import com.rotules.backend.domain.LocationTypeEnum;
 import com.rotules.backend.domain.User;
 import com.rotules.backend.services.LocationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,18 +25,41 @@ public class LocationController {
 
     @Transactional
     @GetMapping("/tree")
-    public ResponseEntity<List<LocationTreeDTO>> getLocationTree(Authentication authentication) {
+    public ResponseEntity<LocationTreeDTO> getLocationTree(Authentication authentication) {
         User user = (User) authentication.getPrincipal();
-        return ResponseEntity.ok(Collections.emptyList());
+        Location rootLocation = locationService.findRootLocationByUser(user);
+        LocationTreeDTO rootTree = mapToTreeDTO(rootLocation);
+        return ResponseEntity.ok(rootTree);
     }
 
-    private LocationTreeDTO convertToTreeDTO(Location location) {
+
+    @PostMapping
+    public ResponseEntity<?> createLocation(@RequestBody LocationCreateDTO createDTO) {
+        locationService.createLocation(
+                createDTO.label(),
+                LocationTypeEnum.getByName(createDTO.typeId()),
+                createDTO.parentId()
+        );
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @GetMapping("/structure")
+    public ResponseEntity<LocationStructureDTO> getLocationStructure() {
+        LocationStructureDTO structure = new LocationStructureDTO();
+        return ResponseEntity.ok(structure);
+    }
+
+    private LocationTreeDTO mapToTreeDTO(Location location) {
+        List<LocationTreeDTO> children = location.getChildren().stream()
+                .map(this::mapToTreeDTO)
+                .collect(Collectors.toList());
+
         return new LocationTreeDTO(
                 location.getId(),
                 location.getLabel(),
-                location.getChildren().stream()
-                        .map(this::convertToTreeDTO)
-                        .collect(Collectors.toList())
+                location.getTypeName(),
+                children
         );
     }
+
 }

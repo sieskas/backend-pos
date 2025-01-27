@@ -27,4 +27,8 @@ public class LocationType {
     public void setId(Long id) {
         this.id = id;
     }
+
+    public LocationTypeEnum getName() {
+        return name;
+    }
 }

@@ -29,7 +29,7 @@ public class Location {
     @OrderBy("label ASC")
     private Set<Location> children = new HashSet<>();
 
-    @ManyToMany(mappedBy = "rootLocation")
+    @OneToMany(mappedBy = "rootLocation", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<User> users = new HashSet<>();
 
     // Méthodes pour la gestion de la hiérarchie
@@ -86,6 +86,10 @@ public class Location {
         return type;
     }
 
+    public String getTypeName() {
+        return type.getName().name();
+    }
+
     public void setType(LocationTypeEnum typeEnum) {
         this.type = new LocationType(typeEnum);
     }
@@ -110,7 +114,21 @@ public class Location {
         return users;
     }
 
-    public void setUsers(Set<User> users) {
-        this.users = users;
+    public void addUser(User user) {
+        if (!users.contains(user)) {
+            users.add(user);
+            if (user.getRootLocation() != this) {
+                user.setRootLocation(this);
+            }
+        }
+    }
+
+    public void removeUser(User user) {
+        if (users.contains(user)) {
+            users.remove(user);
+            if (user.getRootLocation() == this) {
+                user.setRootLocation(null);
+            }
+        }
     }
 }

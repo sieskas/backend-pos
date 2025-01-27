@@ -133,7 +133,13 @@ public class User implements UserDetails {
         return rootLocation;
     }
 
-    public void setRootLocation(Location rootLocation) {
-        this.rootLocation = rootLocation;
+    public void setRootLocation(Location location) {
+        if (this.rootLocation != location) {
+            this.rootLocation = location;
+            if (location != null && !location.getUsers().contains(this)) {
+                location.addUser(this);
+            }
+        }
     }
+
 }
