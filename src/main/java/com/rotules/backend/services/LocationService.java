@@ -63,10 +63,8 @@ public class LocationService {
     }
 
     @Transactional
-    public Location findRootLocationByUser(User user) {
-        return locationRepository.findRootLocationByUser(user.getId())
-                .map(this::loadChildren) // Charge les enfants
-                .orElseThrow(() -> new RuntimeException("Aucune location racine trouvée pour cet utilisateur."));
+    public Optional<Location> findRootLocationByUser(User user) {
+        return locationRepository.findRootLocationByUser(user.getId());
     }
 
     private Location loadChildren(Location rootLocation) {

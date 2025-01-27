@@ -28,7 +28,7 @@ public class LocationController {
     @GetMapping("/tree")
     public ResponseEntity<LocationTreeDTO> getLocationTree(Authentication authentication) {
         User user = (User) authentication.getPrincipal();
-        Location rootLocation = locationService.findRootLocationByUser(user);
+        Location rootLocation = locationService.findRootLocationByUser(user).orElse(null);
         LocationTreeDTO rootTree = mapToTreeDTO(rootLocation);
         return ResponseEntity.ok(rootTree);
     }
@@ -51,6 +51,9 @@ public class LocationController {
     }
 
     private LocationTreeDTO mapToTreeDTO(Location location) {
+        if (location == null) {
+            return null;
+        }
         List<LocationTreeDTO> children = location.getChildren().stream()
                 .map(this::mapToTreeDTO)
                 .collect(Collectors.toList());
