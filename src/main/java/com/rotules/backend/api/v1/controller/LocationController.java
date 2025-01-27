@@ -38,7 +38,7 @@ public class LocationController {
     public ResponseEntity<?> createLocation(@RequestBody LocationCreateDTO createDTO) {
         locationService.createLocation(
                 createDTO.label(),
-                LocationTypeEnum.getByName(createDTO.typeId()),
+                LocationTypeEnum.getByName(createDTO.type()),
                 createDTO.parentId()
         );
         return ResponseEntity.status(HttpStatus.CREATED).build();
