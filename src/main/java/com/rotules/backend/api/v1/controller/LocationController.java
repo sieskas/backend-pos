@@ -1,5 +1,6 @@
 package com.rotules.backend.api.v1.controller;
 
+import com.rotules.backend.api.v1.controller.resources.LocationDetailsDTO;
 import com.rotules.backend.api.v1.controller.resources.LocationStructureDTO;
 import com.rotules.backend.api.v1.controller.resources.LocationTreeDTO;
 import com.rotules.backend.domain.Location;
@@ -61,5 +62,29 @@ public class LocationController {
                 children
         );
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<LocationDetailsDTO> getLocationById(@PathVariable Long id) {
+        Location location = locationService.findById(id);
+        LocationStructureDTO structure = new LocationStructureDTO();
+
+        // Remplir automatiquement les valeurs
+        structure.getLocationInfo().getColumnsSchema().forEach(column -> {
+            String apiField = column.getApiField();
+            Object value = switch (apiField) {
+                case "id" -> location.getId();
+                case "label" -> location.getLabel();
+                case "type" -> location.getTypeName();
+                //case "address" -> location.getAddress();
+                //case "city" -> location.getCity();
+                default -> null;
+            };
+            column.setValue(value);
+        });
+
+        return ResponseEntity.ok(new LocationDetailsDTO(structure));
+    }
+
+    public record LocationDetailsDTO(LocationStructureDTO structure) {}
 
 }

@@ -13,16 +13,16 @@ public class LocationStructureDTO {
     public LocationStructureDTO() {
         this.locationInfo = new SectionDTO("Informations générales",
                 List.of(
-                        new ColumnSchemaDTO("ID", "Number", 10, true),
-                        new ColumnSchemaDTO("Nom", "String", 50, true),
-                        new ColumnSchemaDTO("Type", "Dropdown", true, getLocationTypes())
+                        new ColumnSchemaDTO("ID", "Number", 10, true, "id", null),
+                        new ColumnSchemaDTO("Nom", "String", 50, true, "label", null),
+                        new ColumnSchemaDTO("Type", "Dropdown", true, "type", getLocationTypes())
                 )
         );
 
         this.address = new SectionDTO("Adresse",
                 List.of(
-                        new ColumnSchemaDTO("Adresse", "String", 100, false),
-                        new ColumnSchemaDTO("Ville", "Dropdown", false, List.of("Paris", "Marseille", "Lyon"))
+                        new ColumnSchemaDTO("Adresse", "String", 100, false, "address", null),
+                        new ColumnSchemaDTO("Ville", "Dropdown", false, "city", List.of("Paris", "Marseille", "Lyon"))
                 )
         );
     }
@@ -59,27 +59,32 @@ public class LocationStructureDTO {
         }
     }
 
+
     public static class ColumnSchemaDTO {
         private final String name;
         private final String type;
         private final int maxLength;
         private final boolean required;
+        private final String apiField;  // Nouveau champ
         private final List<String> dropdownOptions;
+        private Object value;  // Pour stocker la valeur
 
-        public ColumnSchemaDTO(String name, String type, int maxLength, boolean required) {
-            this(name, type, maxLength, required, null);
+        public ColumnSchemaDTO(String name, String type, int maxLength, boolean required, String apiField) {
+            this(name, type, maxLength, required, apiField, null);
         }
 
-        public ColumnSchemaDTO(String name, String type, boolean required, List<String> dropdownOptions) {
-            this(name, type, 0, required, dropdownOptions);
+        public ColumnSchemaDTO(String name, String type, boolean required, String apiField, List<String> dropdownOptions) {
+            this(name, type, 0, required, apiField, dropdownOptions);
         }
 
-        public ColumnSchemaDTO(String name, String type, int maxLength, boolean required, List<String> dropdownOptions) {
+        public ColumnSchemaDTO(String name, String type, int maxLength, boolean required, String apiField, List<String> dropdownOptions) {
             this.name = name;
             this.type = type;
             this.maxLength = maxLength;
             this.required = required;
+            this.apiField = apiField;
             this.dropdownOptions = dropdownOptions;
+            this.value = null;
         }
 
         public String getName() {
@@ -98,8 +103,20 @@ public class LocationStructureDTO {
             return required;
         }
 
+        public String getApiField() {
+            return apiField;
+        }
+
         public List<String> getDropdownOptions() {
             return dropdownOptions;
+        }
+
+        public Object getValue() {
+            return value;
+        }
+
+        public void setValue(Object value) {
+            this.value = value;
         }
     }
 }

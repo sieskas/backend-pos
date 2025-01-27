@@ -84,4 +84,10 @@ public class LocationService {
                 .map(Location::getPath)
                 .orElse(Collections.emptyList());
     }
+
+    @Transactional(readOnly = true)
+    public Location findById(Long id) {
+        return locationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Location not found with id: " + id));
+    }
 }
